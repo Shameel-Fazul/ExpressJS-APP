@@ -1,4 +1,5 @@
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
 
@@ -15,6 +16,33 @@ app.set('view engine', 'ejs');
 // When the port is 3000, it'll automatically look for localhost. We don't need to define it.
 // Listen for requests
 app.listen(3000);
+
+// Middleware - code that runs between a request and response.
+// next function tells the server to move on to the next task after this is completed.
+// If the next function isn't declared, node will return the top function and stop the process entirely.
+// app.use((req, res, next) => {
+//     console.log('new request made:');
+//     console.log('host: ', req.hostname);
+//     console.log('path: ', req.path);
+//     console.log('method: ', req.method);
+//     next();
+// });
+
+// app.use((req, res, next) => {
+//     console.log('in the next middleware');
+//     next();
+// });
+
+
+// Middleware that comes with express.
+// Files on the server are private unless they're set to be rendered to the browser
+// Due to this, files like our .css file are private and can't be accessed by the html file rendered to the browser.
+// There is a middleware to create a public folder, and all files in it can be accessed publicly by the templates.
+// We can now load up our styles.css from the templates.
+// When a template wants to load up a static file like styles, express will automatically look inside the public folder.
+app.use(express.static('public'));
+
+app.use(morgan('tiny')); //Third-Party Middleware for better loggings.
 
 app.get('/', (req, res) => {
 // res.setHeader('Content-Type', 'text/html'); is not required on express apps. It automatically detects it.
@@ -33,24 +61,24 @@ app.get('/', (req, res) => {
     ];
 
     res.render('index', { title: 'Home', blogs });
-})
+});
 
 app.get('/about', (req, res) => {
     //res.send('<p>About Page</p>')
     //res.sendFile('./views/about.html', { root: __dirname })
     res.render('about', { title: 'About' });
-})
+});
 
 app.get('/blogs/create', (req, res) => {
     //res.send('<p>About Page</p>')
     //res.sendFile('./views/about.html', { root: __dirname })
     res.render('create', { title: 'Create Blog' });
-})
+});
 
 // Redirects
 app.get('/about-us', (req, res) => {
     res.redirect('/about'); // similar to res.setHeader('Location', '/about'); & it automatically sets the redirect status code.
-})
+});
 
 // 404 Error Page
 // use() method will use this function if any of the request doesn't match above.
@@ -58,4 +86,4 @@ app.get('/about-us', (req, res) => {
 app.use((req, res) => {
     //res.status(404).sendFile('./views/error.html', { root: __dirname }) // res.status is similar to statusCode = 404;
     res.status(404).render('error', { title: 'Error 404' });
-})
+});
