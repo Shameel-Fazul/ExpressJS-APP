@@ -7,7 +7,7 @@ const Blog = require('./models/blog');
 const app = express();
 
 // connect to MongoDB
-const dbURI = 'mongodb+srv://shameelfazul:test1234@node-server-shameel.qwvbo.mongodb.net/node-server-shameelDB?retryWrites=true&w=majority';
+const dbURI = '';
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true }) // second argument is to avoid deprecated warnings.
     .then((result) => { // mongoose.connect() is asynchronous, so we can tackle the .then() method.
         console.log('connected to MongoDB');
