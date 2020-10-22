@@ -1,7 +1,20 @@
 const express = require('express');
 const morgan = require('morgan');
+const mongoose = require('mongoose'); // Object Document Mapping Library - which wraps the MongoDB API.
+                                      // Third-Party Library to interact with our MongoDB database.
 
+const Blog = require('./models/blog');
 const app = express();
+
+// connect to MongoDB
+const dbURI = 'mongodb+srv://shameelfazul:test1234@node-server-shameel.qwvbo.mongodb.net/node-server-shameelDB?retryWrites=true&w=majority';
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true }) // second argument is to avoid deprecated warnings.
+    .then((result) => { // mongoose.connect() is asynchronous, so we can tackle the .then() method.
+        console.log('connected to MongoDB');
+        app.listen(3000); // Listen to requests after the server is connected to MongoDB.
+    })
+    .catch((err) => { console.log(err) })
+
 
 // view engine is a setting in our express app.
 // we're using ejs as our app's view engine.
@@ -15,7 +28,7 @@ app.set('view engine', 'ejs');
 
 // When the port is 3000, it'll automatically look for localhost. We don't need to define it.
 // Listen for requests
-app.listen(3000);
+//app.listen(3000);
 
 // Middleware - code that runs between a request and response.
 // next function tells the server to move on to the next task after this is completed.
@@ -42,7 +55,50 @@ app.listen(3000);
 // When a template wants to load up a static file like styles, express will automatically look inside the public folder.
 app.use(express.static('public'));
 
-app.use(morgan('tiny')); //Third-Party Middleware for better loggings.
+app.use(morgan('dev')); //Third-Party Middleware for better loggings.
+
+
+// mongoose and mongo sandbox routes
+
+// Add a blog
+app.get('/add-blog', (req, res) => {
+    const blog = new Blog({ // creating a new instance
+        title: 'Our Neighboring Galaxy',
+        snippet: 'andromeda is coming',
+        body: 'more about andromeda is coming'
+    });
+    blog.save() // save document in the databse
+     .then((result) => { // blog.save() is asynchronous, so we can tackle the .then() method.
+        res.send(result);
+     })
+     .catch((err) => {
+         console.log(err);
+     })
+});
+
+// Get all blogs
+app.get('/all-blogs', (req, res) => {
+    Blog.find() // Finds all the documents inside the Blogs collection 
+     .then((result) => { // Blog.find() is asynchronous, so we can tackle the .then() method.
+         res.send(result);
+     })
+     .catch((err) => {
+        console.log(err);
+    })
+});
+
+// Find single blog by ID
+// IDs aren't stored as strings in the collection.
+// ^ Moongoose converts them to string back and forth ^
+app.get('/single-blog', (req, res) => {
+    Blog.findById('5f9166536a137b0f9ca20411')
+     .then((result) => {
+         res.send(result);
+     })
+     .catch((err) => {
+        console.log(err);
+    })
+});
 
 app.get('/', (req, res) => {
 // res.setHeader('Content-Type', 'text/html'); is not required on express apps. It automatically detects it.
@@ -54,19 +110,32 @@ app.get('/', (req, res) => {
 // To pass data to the template, we add an object as the second argument.
 // The data can be obtained on the template by using the property name inside the ejs syntax <%= title %>
 
-    const blogs = [
-        {title: 'The theory of everything', snippet: 'lorem ipsum'},
-        {title: 'The First Empire', snippet: 'lorem ipsum'},
-        {title: 'Journey to the Quantum Realm', snippet: 'lorem ipsum'}
-    ];
+    // const blogs = [
+    //     {title: 'The theory of everything', snippet: 'lorem ipsum'},
+    //     {title: 'The First Empire', snippet: 'lorem ipsum'},
+    //     {title: 'Journey to the Quantum Realm', snippet: 'lorem ipsum'}
+    // ];
 
-    res.render('index', { title: 'Home', blogs });
+    // res.render('index', { title: 'Home', blogs });
+
+    res.redirect('/blogs');
 });
 
 app.get('/about', (req, res) => {
     //res.send('<p>About Page</p>')
     //res.sendFile('./views/about.html', { root: __dirname })
     res.render('about', { title: 'About' });
+});
+
+// Find all blogs
+app.get('/blogs', (req, res) => {
+    Blog.find().sort({ createdAt: -1 }) // Finds all the documents inside the Blogs collection and sort descending order.
+     .then((result) => { // Blog.find() is asynchronous, so we can tackle the .then() method.
+         res.render('index', { title: 'All Blogs', blogs: result });
+     })
+     .catch((err) => {
+        console.log(err);
+    })
 });
 
 app.get('/blogs/create', (req, res) => {
