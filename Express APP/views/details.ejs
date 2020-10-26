@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('./partials/head.ejs') %>
+
+<body>
+    
+    <%- include('./partials/nav.ejs') %>
+
+    <div class="details content">
+        <h2><%= blog.title %></h2>
+        <div class="content">
+            <p><%= blog.body %> </p>
+        </div>
+        <a class="delete" data-doc="<%= blog.id %>">delete</a> 
+    </div>
+
+    <%- include('./partials/footer.ejs') %>
+    
+    <script>
+        const trashcan = document.querySelector('a.delete'); // Creating a reference of the a element tag.
+        trashcan.addEventListener('click', (e) => {
+            const endpoint = `/blogs/${trashcan.dataset.doc}`;// data-doc is used to create a custom data property in html.
+                                                             // ^ We can access that property using the dataset property from the reference ^
+            // Javascript Fetch API
+            // An action to our endpoint with a request method as 'DELETE'
+            fetch(endpoint, {
+                method: 'DELETE'
+            }) // fetch() is asynchronous, so we can tackle the .then() method.
+            .then( (response) => response.json() ) // Getting the response from the sever, and parsing the json to a JavaScript object
+            .then( (data) => window.location.href = data.redirect ) // response.json() is asynchronous, so we can tackle the .then() method.
+            .catch( (err) => console.log(err) )
+        });
+    </script>
+
+</body>
+</html>

@@ -54,7 +54,7 @@ app.set('view engine', 'ejs');
 // We can now load up our styles.css from the templates.
 // When a template wants to load up a static file like styles, express will automatically look inside the public folder.
 app.use(express.static('public'));
-
+app.use(express.urlencoded({ extended: true })); // Takes all the data affiliated with a POST request and attaches it to an object in the req object.
 app.use(morgan('dev')); //Third-Party Middleware for better loggings.
 
 
@@ -138,7 +138,50 @@ app.get('/blogs', (req, res) => {
     })
 });
 
-app.get('/blogs/create', (req, res) => {
+// POST Requests
+app.post('/blogs', (req, res) => {
+    //console.log(req.body)
+    const blog = new Blog(req.body);
+    blog.save()
+    .then((result) => { // blog.save() is asynchronous, so we can tackle the .then() method.
+        res.redirect('/blogs');
+    })
+    .catch((err) => {
+        console.log(err);
+    })
+    // When creating a new blog instance, it requires an object.
+    // ^ Since our req.body is an object and have the same properties as our Blog model ^
+    // ^ We can simply pass req.body as the Argument ^
+});
+
+// Route Parameters - Variables in GET requests.
+app.get('/blogs/:id', (req, res) => {
+    const id = req.params.id;
+    Blog.findById(id)
+    .then((result) => {
+        res.render('details', { title: 'Blog Details', blog: result });
+    })
+    .catch((err) => {
+        console.log(err);
+    })
+});
+
+// DELETE Requests
+app.delete('/blogs/:id', (req, res) => {
+    const id = req.params.id
+    Blog.findByIdAndDelete(id)
+    .then(() => {
+        res.json({ redirect: '/blogs' }); // AJAX expects a json or text response.
+    // If the request is not from a form, then it's an AJAX request.
+    // ^ When there is an AJAX request from the browser, it expects a text or json response ^
+    // ^ We can't use the res.redirect() method if the request is not from a form ^
+    })
+    .catch((err) => {
+        console.log(err);
+    })
+});
+
+app.get('/create', (req, res) => {
     //res.send('<p>About Page</p>')
     //res.sendFile('./views/about.html', { root: __dirname })
     res.render('create', { title: 'Create Blog' });
