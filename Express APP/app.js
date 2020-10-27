@@ -4,10 +4,12 @@ const mongoose = require('mongoose'); // Object Document Mapping Library - which
                                       // Third-Party Library to interact with our MongoDB database.
 
 const Blog = require('./models/blog');
+const blogRoutes =  require('./routes/blogRoutes');
+
 const app = express();
 
 // connect to MongoDB
-const dbURI = '';
+const dbURI = 'mongodb+srv://shameelfazul:test1234@node-server-shameel.qwvbo.mongodb.net/node-server-shameelDB?retryWrites=true&w=majority';
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true }) // second argument is to avoid deprecated warnings.
     .then((result) => { // mongoose.connect() is asynchronous, so we can tackle the .then() method.
         console.log('connected to MongoDB');
@@ -127,64 +129,67 @@ app.get('/about', (req, res) => {
     res.render('about', { title: 'About' });
 });
 
-// Find all blogs
-app.get('/blogs', (req, res) => {
-    Blog.find().sort({ createdAt: -1 }) // Finds all the documents inside the Blogs collection and sort descending order.
-     .then((result) => { // Blog.find() is asynchronous, so we can tackle the .then() method.
-         res.render('index', { title: 'All Blogs', blogs: result });
-     })
-     .catch((err) => {
-        console.log(err);
-    })
-});
+// All routes inside will start with /blogs/; /blogs/:id - only mention '/:id' or '/' in the blog router.
+app.use('/blogs', blogRoutes); // Express Router - Takes the routes and applies to the app.
 
-// POST Requests
-app.post('/blogs', (req, res) => {
-    //console.log(req.body)
-    const blog = new Blog(req.body);
-    blog.save()
-    .then((result) => { // blog.save() is asynchronous, so we can tackle the .then() method.
-        res.redirect('/blogs');
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-    // When creating a new blog instance, it requires an object.
-    // ^ Since our req.body is an object and have the same properties as our Blog model ^
-    // ^ We can simply pass req.body as the Argument ^
-});
+// // Find all blogs
+// app.get('/blogs', (req, res) => {
+//     Blog.find().sort({ createdAt: -1 }) // Finds all the documents inside the Blogs collection and sort descending order.
+//      .then((result) => { // Blog.find() is asynchronous, so we can tackle the .then() method.
+//          res.render('index', { title: 'All Blogs', blogs: result });
+//      })
+//      .catch((err) => {
+//         console.log(err);
+//     })
+// });
 
-// Route Parameters - Variables in GET requests.
-app.get('/blogs/:id', (req, res) => {
-    const id = req.params.id;
-    Blog.findById(id)
-    .then((result) => {
-        res.render('details', { title: 'Blog Details', blog: result });
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-});
+// // POST Requests
+// app.post('/blogs', (req, res) => {
+//     //console.log(req.body)
+//     const blog = new Blog(req.body);
+//     blog.save()
+//     .then((result) => { // blog.save() is asynchronous, so we can tackle the .then() method.
+//         res.redirect('/blogs');
+//     })
+//     .catch((err) => {
+//         console.log(err);
+//     })
+//     // When creating a new blog instance, it requires an object.
+//     // ^ Since our req.body is an object and have the same properties as our Blog model ^
+//     // ^ We can simply pass req.body as the Argument ^
+// });
 
-// DELETE Requests
-app.delete('/blogs/:id', (req, res) => {
-    const id = req.params.id
-    Blog.findByIdAndDelete(id)
-    .then(() => {
-        res.json({ redirect: '/blogs' }); // AJAX expects a json or text response.
-    // If the request is not from a form, then it's an AJAX request.
-    // ^ When there is an AJAX request from the browser, it expects a text or json response ^
-    // ^ We can't use the res.redirect() method if the request is not from a form ^
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-});
+// // Route Parameters - Variables in GET requests.
+// app.get('/blogs/:id', (req, res) => {
+//     const id = req.params.id;
+//     Blog.findById(id)
+//     .then((result) => {
+//         res.render('details', { title: 'Blog Details', blog: result });
+//     })
+//     .catch((err) => {
+//         console.log(err);
+//     })
+// });
+
+// // DELETE Requests
+// app.delete('/blogs/:id', (req, res) => {
+//     const id = req.params.id
+//     Blog.findByIdAndDelete(id)
+//     .then(() => {
+//         res.json({ redirect: '/blogs' }); // AJAX expects a json or text response.
+//     // If the request is not from a form, then it's an AJAX request.
+//     // ^ When there is an AJAX request from the browser, it expects a text or json response ^
+//     // ^ We can't use the res.redirect() method if the request is not from a form ^
+//     })
+//     .catch((err) => {
+//         console.log(err);
+//     })
+// });
 
 app.get('/create', (req, res) => {
     //res.send('<p>About Page</p>')
     //res.sendFile('./views/about.html', { root: __dirname })
-    res.render('create', { title: 'Create Blog' });
+    res.render('blogs/create', { title: 'Create Blog' });
 });
 
 // Redirects
